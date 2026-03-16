@@ -1,8 +1,10 @@
 import React from 'react'
+import Navbar from './components/Navbar'
 
 const App = () => {
   return (
-    <div>
+    <div  className='w-screen h-screen flex flex-col items-center'>
+      <Navbar/>
       
     </div>
   )
