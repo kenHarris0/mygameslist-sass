@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Ellipsis,Users,Heart,Link,CircleDollarSign  } from 'lucide-react';
+import { Ellipsis,Users,Heart,Link,CircleDollarSign,Loader  } from 'lucide-react';
 import { gamecontext } from '../Context/Context';
 import {useNavigate} from 'react-router-dom'
 import { useMemo } from "react";
@@ -11,7 +11,7 @@ const Gamepage = () => {
 const { allgames, page, setpage, total } = useContext(gamecontext);
 
 const navv=useNavigate()
-
+const [loading,setloading]=useState(true)
 //filter stuffs
 
 //for rating
@@ -30,7 +30,7 @@ const [genre,setgenre]=useState({
 
 const filteredgames = useMemo(() => {
   if (!allgames) return [];
-
+ 
   return allgames.filter((game) =>{
     const gamerating=parseInt(game.rating)
     const ratingMatch=gamerating>=rating
@@ -67,15 +67,25 @@ const filteredgames = useMemo(() => {
 
 
 
-console.log(allgames);
-console.log(filteredgames);
+useEffect(() => {
+  if (allgames) {
+    setloading(false);
+  }
+}, [allgames]);
 
-
+if (loading) {
+  return (
+    <div className="w-full h-screen flex items-center justify-center bg-slate-900">
+      <Loader className="w-10 h-10 animate-spin text-white" />
+    </div>
+  );
+}
 
 
 
   return (
   <div className='w-full min-h-screen bg-slate-900 flex flex-col pt-20'>
+    
 
   {/* HEADER */}
   <div className='w-full flex items-end justify-center p-6'>

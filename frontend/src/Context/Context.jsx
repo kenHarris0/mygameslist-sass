@@ -53,9 +53,9 @@ const getuserdata=async()=>{
 
     //getting the game
 
-    const [allgames,setallgames]=useState([])
+    const [allgames,setallgames]=useState(null)
     const getallgames=async()=>{
-         if (allgames.length > 0) return;
+         if (allgames) return;
         try{
             const res=await axios.get(url+"/game/getgames",{withCredentials:true})
             if(res.data.success){

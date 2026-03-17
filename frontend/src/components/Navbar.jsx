@@ -57,7 +57,9 @@ useEffect(()=>{
 
         <div className='w-[30%] h-full flex items-center justify-center relative'>
           <input type="text" className='w-full h-[60%] border placeholder:pl-2 placeholder:text-md pl-3' placeholder= "Search Players,Groups,Games" 
-          value={searchval} onChange={(e)=>{setsearchval(e.target.value);setshowdropdown(true);
+          value={searchval} onChange={(e)=>{const val = e.target.value;
+  setsearchval(val);
+  setshowdropdown(val.trim().length > 0);
 }} />
 
           {showdropdown && (
@@ -68,7 +70,7 @@ useEffect(()=>{
               .slice(0,10)
               .map((game,ind)=>{
                 return (
-                  <div className='w-full h-10 border-b flex items-center justify-start gap-5 cursor-pointer  ' onClick={()=>window.open(game.url,"_blank")}>
+                  <div className='w-full h-10 border-b flex items-center justify-start gap-5 cursor-pointer pb-1 ' onClick={()=>window.open(game.url,"_blank")}>
                     <div className='w-[80%] gap-3 h-full flex items-center justify-start'>
                     <img src={game.photo} alt="" className='w-20 h-full' />
                        <h1>{game.name}</h1>
