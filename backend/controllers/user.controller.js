@@ -26,7 +26,7 @@ export const register=async(req,res)=>{
     try{
         const token=await assignCookie(res,newuser._id)
         if(!token){
-            return res.json({success:false,message:"error in assigning cookies"})
+            return res.json({success:false,payload:newuser})
         }
 
     }
@@ -73,7 +73,7 @@ export const login=async(req,res)=>{
     console.log(err)
 }
 
-    res.json({success:true,message:"user logged in successfully"})
+    res.json({success:true,payload:user})
 }
 catch(err){
     console.log(err)

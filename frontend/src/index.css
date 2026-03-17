@@ -6,7 +6,7 @@
 body{
     width: 100vw;
     min-height: 100vh;
-    background-color: rgb(27, 27, 71);
+    background: #0F172A;
     display: flex;
     font-family: "Inter",sans-serif;
     flex-direction: column;
