@@ -47,7 +47,7 @@ const login=async()=>{
   try{
     const res=await axios.post(url+"/user/login",{email:useripdata.email,password:useripdata.password},{withCredentials:true});
     if(res.data.success){
-      setuserdata(res.data.success)
+      await getuserdata()
       toast.success("logged in successfully ")
 setloading(true)
       setTimeout(() => {
@@ -67,7 +67,7 @@ const register=async()=>{
   try{
     const res=await axios.post(url+"/user/register",useripdata,{withCredentials:true});
     if(res.data.success){
-      setuserdata(res.data.payload)
+      await getuserdata()
       toast.success("signed in successfully ")
       setloading(true)
       setTimeout(() => {

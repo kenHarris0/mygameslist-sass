@@ -1,6 +1,11 @@
 import User from '../models/User.js';
 import bcrypt from 'bcrypt'
 import { assignCookie } from '../config/cookies.js';
+import Game from '../models/Game.js'
+import cloudinary from '../config/Cloudinary.js';
+import {io} from '../config/socket.js'
+import {returnUsersocket} from '../config/socket.js'
+
 
 export const register=async(req,res)=>{
     const {name,email,password}=req.body
@@ -107,7 +112,7 @@ return res.json({success:true,message:"user is authenticated"})
 export const getuserdata=async(req,res)=>{
     try{
         const userId=req.userId
-        const user=await User.findById(userId).select("-password")
+        const user=await User.findById(userId).select("-password").populate("friends").select("-password").populate("games.game")
 
         if(!user){
             return res.json({success:false,message:"user not found"})
@@ -119,4 +124,313 @@ export const getuserdata=async(req,res)=>{
     catch(err){
     console.log(err)
 }
+}
+
+//add frineds
+
+export const sendFriendReq=async(req,res)=>{
+    try{
+        const {userId}=req;
+        const {friendId}=req.body;
+        if (userId.toString() === friendId.toString()) {
+    return res.json({ success: false, message: "You cannot send request to yourself" });
+}
+
+        const user=await User.findById(userId);
+        if(!user){
+            return res.json({success:false,message:"user not found to add friend"})
+        }
+        const friend=await User.findById(friendId);
+ if(!friend){
+            return res.json({success:false,message:"friend bot found to add"})
+        }
+
+    const alreadyAdded=user.friends.find((friend)=>friend.toString()===friendId.toString())
+    if(alreadyAdded){
+        return res.json({success:false,message:"frined already exists"})
+    }
+    const alreadyinSent=user.friendRequestsSent.find((friend)=>friend.toString()===friendId.toString())
+    if(alreadyinSent){
+        return res.json({success:false,message:"friend req already sent"})
+    }
+    
+
+    await User.updateOne({
+        _id:userId
+    },{
+        $addToSet:{
+            friendRequestsSent:friendId
+        }
+    })
+    await User.updateOne({
+        _id:friendId
+    },{
+        $addToSet:{
+            friendRequestsReceived:userId
+        }
+    })
+
+    
+
+const friendSocketId=returnUsersocket(friendId)
+if(friendSocketId){
+    io.to(friendSocketId).emit("friendreqreceived",{
+        _id:user._id,
+        name:user.name,
+        image:user.image
+    })
+}
+
+res.json({success:true,message:"friend added successfully"})
+
+
+
+    }
+    catch(err){
+        console.log(err)
+    }
+}
+
+export const acceptFriendReq=async(req,res)=>{
+    try{
+        const {userId}=req;
+        const {friendId}=req.body;
+
+        const user=await User.findById(userId);
+        if(!user){
+            return res.json({success:false,message:"user not found to add friend"})
+        }
+        const friend=await User.findById(friendId);
+ if(!friend){
+            return res.json({success:false,message:"friend bot found to add"})
+        }
+
+    const alreadyAdded=user.friends.find((friend)=>friend.toString()===friendId.toString())
+    if(alreadyAdded){
+        return res.json({success:false,message:"frined already exists"})
+    }
+    const reqExist=user.friendRequestsReceived.find(reqq=>reqq.toString()===friendId.toString())
+    if(!reqExist){
+        return res.json({success:false,message:"no req found"})
+    }
+
+
+    await User.updateOne({
+        _id:userId,
+    },
+{
+    $addToSet:{
+        friends:friendId
+    },
+    $pull:{
+        friendRequestsReceived:friendId
+    }
+})
+await User.updateOne({ 
+    _id:friendId,
+},{
+$addToSet:{
+    friends:userId
+
+},
+$pull:{
+    friendRequestsSent:userId
+}})
+
+const friendSocketId=returnUsersocket(friendId)
+if(friendSocketId){
+    io.to(friendSocketId).emit("friendreqaccepted",{
+        _id:user._id,
+        name:user.name,
+        image:user.image
+    })
+}
+res.json({success:true,message:"friend added successfully"})
+}
+    catch(err){
+        console.log(err)
+    }
+}
+
+//reject friend req
+
+export const rejectFriendReq=async(req,res)=>{
+     try{
+        const {userId}=req;
+        const {friendId}=req.body;
+
+        const user=await User.findById(userId);
+        if(!user){
+            return res.json({success:false,message:"user not found to add friend"})
+        }
+        const friend=await User.findById(friendId);
+ if(!friend){
+            return res.json({success:false,message:"friend bot found to add"})
+        }
+
+           const reqExist=user.friendRequestsReceived.find(reqq=>reqq.toString()===friendId.toString())
+    if(!reqExist){
+        return res.json({success:false,message:"no req found"})
+    }
+
+            await User.updateOne({
+        _id:userId,
+    },
+{
+    $pull:{
+        friendRequestsReceived:friendId
+    }
+})
+await User.updateOne({ 
+    _id:friendId,
+},{
+$pull:{
+    friendRequestsSent:userId
+}})
+
+
+const friendSocketId=returnUsersocket(friendId)
+if(friendSocketId){
+    io.to(friendSocketId).emit("friendreqrejected",{
+         _id:user._id,
+        name:user.name,
+        image:user.image
+    })
+}
+res.json({success:true,message:"friend req rejected "})
+}
+    catch(err){
+        console.log(err)
+    }
+}
+
+//getalluser games
+
+export const getUserGames=async(req,res)=>{
+    try{
+        const {userId}=req;
+
+        const user=await User.findById(userId).select("games").populate("games.game")
+         if (!user) {
+            return res.json({ success: false, message: "user not found" });
+        }
+
+        res.json({
+            success: true,
+            payload: user.games
+        });
+
+    }
+    catch(err){
+        console.log(err)
+    }
+}
+
+// change userprofile picture
+export const changeProfilePicture=async(req,res)=>{
+    try{
+    const {userId}=req
+    const {image}=req.body;
+
+    const user=await User.findById(userId);
+    if(!user){
+        return res.json({success:false,message:"user not found"})
+    }
+    let img=null
+    if(image){
+        const ress=await cloudinary.uploader.upload(image)
+        if(ress.secure_url){
+            img=ress.secure_url
+        }
+    }
+
+    await User.updateOne({
+        _id:userId
+    },
+{
+    $set:{
+        image:img
+    }
+})
+
+res.json({success:true,payload:img})
+
+    }
+    catch(err){
+        console.log(err)
+    }
+}
+
+//edit profile
+export const editProfile=async(req,res)=>{
+     try{
+    const {userId}=req
+    const {name,bio,status}=req.body;
+
+    const user=await User.findById(userId);
+    if(!user){
+        return res.json({success:false,message:"user not found"})
+    }
+   
+
+    await User.updateOne({
+        _id:userId
+    },
+{
+    $set:{
+        name:name,
+        bio:bio,
+        status:status
+    }
+})
+
+res.json({success:true,message:"profile updated successfully"})
+
+    }
+    catch(err){
+        console.log(err)
+    }
+}
+
+// change status of user like playing valo ,rust when game status is changed
+
+export const editcurrentlyplaying=async(req,res)=>{
+    try{
+        const {userId}=req;
+        const {gameName}=req.body;
+
+        await User.updateOne({
+            _id:userId
+
+        },
+    {
+        $set:{
+            currentlyPlaying:gameName
+        }
+    })
+
+    res.json({success:true,payload:gameName})
+
+    }
+    catch(err){
+        console.log(err)
+    }
+}
+
+//get all users frined
+
+//get all users
+export const getallusers=async(req,res)=>{
+    try{
+        const {userId}=req;
+
+        const users=await User.find().select("-password").populate("friends").select("-password").populate("games.game")
+        const filteredUsers=users.filter(user=>user._id.toString()!==userId.toString())
+
+        res.json({success:true,payload:filteredUsers})
+
+    }
+    catch(err){
+        console.log(err)
+    }
 }

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { Gamepad2,Search,Bell,LogOut,Heart  } from 'lucide-react';
+import { Gamepad2,Search,Bell,LogOut,Heart, Users  } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { gamecontext } from '../Context/Context';
@@ -7,7 +7,7 @@ import axios from 'axios';
 const Navbar = () => {
 
 const navv=useNavigate()
-const {url,userdata,setuserdata,getuserdata,checkauth,searchval,setsearchval,allgames}=useContext(gamecontext)
+const {url,userdata,setuserdata,getuserdata,checkauth,searchval,setsearchval,allgames,allusers}=useContext(gamecontext)
 const [showdropdown,setshowdropdown]=useState(false)
 const clickOutsideref=useRef(null)
 
@@ -46,7 +46,7 @@ useEffect(()=>{
 },[showdropdown])
 
   return (
-    <div className='w-screen h-17.5 bg-blue-950  flex items-center justify-start gap-10 p-1 pl-3 fixed top-0 z-999'>
+    <div className='w-screen h-17.5 bg-slate-900  flex items-center justify-start gap-10 p-1 pl-3 fixed top-0 z-999'>
 
         <div className='w-[15%] h-[80%] flex items-center justify-start cursor-pointer ' onClick={()=>navv('/')}>
                <Gamepad2 className='w-10 h-10 animate-pulse' />
@@ -88,6 +88,27 @@ useEffect(()=>{
               
               
               }
+              {
+                allusers?.filter((user,ind)=>user.name.toLowerCase().includes(searchval.toLowerCase()))
+                .slice(0,7).map((user,ind)=>{
+                  return (
+                    <div className='w-full h-10 border flex items-center justify-center'>
+                           
+                           <div className='w-1/2 h-full flex items-start justify-center'>
+                           <img src={user.image} alt="" className='w-6 h-6 rounded-full object-cover' />
+                           <h1>{user?.name}</h1>
+
+                           </div>
+
+                           <div className='w-1/2 h-full flex items-end justify-end'>
+                            <Users className='w-5 h-5'/>
+                           </div>
+
+
+                    </div>
+                  )
+                })
+              }
 
 
 
@@ -97,7 +118,7 @@ useEffect(()=>{
 
         <div className='w-[17%] flex items-center justify-start gap-5'>
           <p className='cursor-pointer hover:animate-pulse ' onClick={()=>navv('/games')}>Dicover</p>
-          <p className='cursor-pointer hover:animate-pulse'>Friends</p>
+          <p className='cursor-pointer hover:animate-pulse' onClick={()=>navv('/souls')}>Souls</p>
           <p className='cursor-pointer hover:animate-pulse'>Groups</p>
           <p className='cursor-pointer hover:animate-pulse'>Messages</p>
 
@@ -109,7 +130,7 @@ useEffect(()=>{
           {!userdata?<img src="./image.png" alt="profile" className='w-10 h-10 rounded-full cursor-pointer bg-white' onClick={()=>navv('/login')}/>
           :
           (<div className='w-full flex items-center justify-center gap-4'>
-            <img src="./avatar.png" alt="profile" className='w-10 h-10 rounded-full cursor-pointer bg-white' onClick={()=>navv('/profile')}/>
+            <img src={userdata?.image} alt="profile" className='w-10 h-10 rounded-full cursor-pointer bg-white' onClick={()=>navv('/profile')}/>
              <LogOut className='w-6 h-6 *: cursor-pointer ' onClick={()=>logout()}/>
 </div>)}
 

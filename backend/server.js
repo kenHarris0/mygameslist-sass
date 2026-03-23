@@ -7,15 +7,19 @@ import  connectionDB from './config/db.js';
 //imports from other files
 import userRouter from './routes/user.routes.js'
 import gameRouter from './routes/game.route.js'
+import {app,server} from './config/socket.js'
+
 
 //     configs     //
-const app=express();
+
 app.use(cors({
     origin:'http://localhost:5173',
-    credentials:true
+    credentials:true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }))
 
-app.use(express.json());
+app.use(express.json({limit:"20mb"}));
 app.use(cookieParser());
 
 // app routes
@@ -26,7 +30,7 @@ app.use('/game',gameRouter)
 
 
 // server running
-app.listen(process.env.PORT,()=>{
+server.listen(process.env.PORT,()=>{
     connectionDB()
     console.log('server is running')
 })

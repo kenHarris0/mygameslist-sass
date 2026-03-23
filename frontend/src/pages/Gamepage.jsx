@@ -3,12 +3,12 @@ import { Ellipsis,Users,Heart,Link,CircleDollarSign,Loader  } from 'lucide-react
 import { gamecontext } from '../Context/Context';
 import {useNavigate} from 'react-router-dom'
 import { useMemo } from "react";
-
+import {toast} from 'react-toastify'
 
 
 const Gamepage = () => {
 
-const { allgames, page, setpage, total } = useContext(gamecontext);
+const { allgames, page, setpage, total,addGametoUser,userdata } = useContext(gamecontext);
 
 const navv=useNavigate()
 const [loading,setloading]=useState(true)
@@ -190,7 +190,11 @@ onChange={() =>
 
       <div className='grid grid-cols-3 gap-6'>
         
-        {filteredgames?.map((game) => (
+        {filteredgames?.map((game) => {
+        
+        const isAdded=userdata?.games?.some((g)=>g.game._id.toString()===game._id.toString())
+
+        return(
           <div
             key={game._id}
             className='group bg-slate-900 rounded-2xl overflow-hidden 
@@ -199,7 +203,15 @@ onChange={() =>
           >
 
             {/* IMAGE */}
-            <div className='w-full h-48 overflow-hidden relative'>
+            <div className='w-full h-48 overflow-hidden relative' onClick={()=>{
+              if(!isAdded){
+                toast.info("please add the game to view")
+              }
+              else{
+              navv(`/game/${game._id}
+              
+              
+              `)} }}>
               <img
                 src={game.photo}
                 className='w-full h-full object-cover group-hover:scale-110 transition duration-500'
@@ -237,12 +249,15 @@ onChange={() =>
 
               <div className='flex justify-between items-center mt-2'>
                 <button
-                  onClick={() => window.open(game.url, "_blank")}
-                  className='px-3 py-1 text-sm rounded-lg 
-                  bg-linear-to-r from-pink-500 to-purple-500 
-                  hover:scale-105 transition'
+                disabled={isAdded}
+                  onClick={() =>addGametoUser(game._id)}
+                  className={`px-3 py-1 text-sm rounded-lg 
+                  
+                  hover:scale-105 transition cursor-pointer
+                  ${isAdded?"bg-gray-600 cursor-not-allowed":"bg-linear-to-r from-pink-500 to-purple-500 "}
+        `}
                 >
-                  View Game
+                {isAdded? "In Library":"Add Game" }
                 </button>
 
                 <Link
@@ -253,7 +268,7 @@ onChange={() =>
 
             </div>
           </div>
-        ))}
+)})}
       </div>
 
     </div>

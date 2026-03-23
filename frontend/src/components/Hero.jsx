@@ -5,47 +5,65 @@ import {useNavigate} from 'react-router-dom'
 import gsap from "gsap";
 const Hero = () => {
 
-const navv=useNavigate()
-
- 
+  const navv = useNavigate();
 
   return (
-   <div
-  className="w-full h-full bg-cover bg-center flex relative items-center justify-between px-10 rounded-4xl "
-  style={{ backgroundImage: `url(${Herobanner})`  }}
->
-    <div className='absolute inset-0 bg-blue-950/90 rounded-4xl'></div>
-  {/* Left */}
- <div className="text-white z-10 max-w-xl flex flex-col items-start justify-start p-10">
-  
-  <h1 className="text-6xl font-bold  mb-10">
-    Welcome to <span className="text-purple-200  " style={{
-    textShadow:
-      " 0 0 10px #d946ef",
-  }}>MyGamesList</span>
-  </h1>
+    <div
+      className="w-full h-[420px] bg-cover bg-center relative flex items-center justify-between px-12 rounded-3xl overflow-hidden"
+      style={{ backgroundImage: `url(${Herobanner})` }}
+    >
 
-  <h2 className="text-lg font-semibold text-gray-200 w-100 mb-2">
-    Find Players To Play With Online
-  </h2>
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
 
-  <p className="text-lg font-semibold text-gray-200 w-100 mb-5">
-    Discover games, connect with players, and build your squad.
-  </p>
+      {/* Glow effect */}
+      <div className="absolute -top-20 -left-20 w-80 h-80 bg-purple-500/20 blur-3xl rounded-full"></div>
 
-  <button className='w-40  h-10   cursor-pointer hover:bg-purple-500 hover:text-white font-bold rounded-full bg-pink-200 text-black ' onClick={()=>navv('/games')}>Discover Games</button>
+      {/* LEFT CONTENT */}
+      <div className="relative z-10 max-w-xl flex flex-col gap-4 text-white">
 
-</div>
+        <h1 className="text-5xl font-extrabold leading-tight">
+          Welcome to{" "}
+          <span className="text-purple-300 drop-shadow-[0_0_15px_rgba(217,70,239,0.8)]">
+            MyGamesList
+          </span>
+        </h1>
 
-  {/* Right */}
-  <div className='z-10'>
-    <img
-      src={terrain}
-      alt=""
-      className="w-80 h-80 object-cover rounded-2xl "
-    />
-  </div>
-</div>
+        <p className="text-gray-300 text-lg">
+          Find players, explore games, and build your squad.
+        </p>
+
+        <div className="flex gap-4 mt-4">
+
+          {/* Primary button */}
+          <button
+            onClick={() => navv('/games')}
+            className="px-6 py-2 rounded-full bg-linear-to-r from-pink-500 to-purple-500 
+            hover:scale-105 transition font-semibold shadow-lg"
+          >
+            Discover Games
+          </button>
+
+          {/* Secondary button */}
+          
+
+        </div>
+      </div>
+
+      {/* RIGHT IMAGE */}
+      <div className="relative z-10">
+        <img
+          src={terrain}
+          alt=""
+          className="w-80 h-80 object-cover rounded-2xl shadow-2xl 
+          hover:scale-105 transition duration-500"
+        />
+
+        {/* glow under image */}
+        <div className="absolute inset-0 bg-purple-500/10 blur-2xl -z-10 rounded-full"></div>
+      </div>
+
+    </div>
   )
 }
 

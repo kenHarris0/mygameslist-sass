@@ -1,6 +1,7 @@
 import React, { Children, createContext, useEffect, useState,useRef } from 'react'
 import axios from 'axios'
-
+import {toast} from 'react-toastify'
+import {io} from 'socket.io-client'
 
 export const gamecontext=createContext()
 
@@ -11,7 +12,7 @@ const Context = ({children}) => {
 const[userdata,setuserdata]=useState(null)
 const [searchval,setsearchval]=useState("")
     const url="http://localhost:5000"
-
+const [socket,setsocket]=useState(null)
 
 //checking auth for session
     const checkauth=async()=>{
@@ -69,23 +70,86 @@ const getuserdata=async()=>{
         }
     }
 
+    //adding games to user's 
+
+    const addGametoUser=async(gameId)=>{
+        try{
+            const res=await axios.post(url+"/game/addgametouser",{gameId},{withCredentials:true})
+            if(res.data.success){
+
+                toast.success("game added successfully")
+                getuserdata()
+            }
+
+        }
+        catch(err){
+            console.log(err)
+        }
+    }
+
+    const [onlineusers,setonlineusers]=useState(null)
+    const connectSocket=async()=>{
+        if(!userdata) return;
+        try{
+            if(socket){
+                socket.disconnect()
+                setsocket(null)
+            }
+
+            const soc=io(url,{
+                withCredentials:true
+            })
+            setsocket(soc)
+
+            soc.on('onlineusers',(onlines)=>{
+                setonlineusers(onlines)
+            })
+            
+
+
+
+        }
+        catch(err){
+            console.log(err)
+        }
+    }
+    //getallysers
+    const [allusers,setallusers]=useState(null)
+    const getallusers=async()=>{
+        try{
+            const res=await axios.get(url+"/user/getall",{withCredentials:true})
+            if(res.data.success){
+               setallusers(res.data.payload)
+            }
+
+        }
+        catch(err){
+            console.log(err)
+        }
+    }
+
     useEffect(()=>{
         checkauth()
+
         
 
     },[])
 
 useEffect(()=>{
     getallgames()
+    connectSocket()
+    getallusers()
 },[userdata])
 
 
 
-    console.log(allgames)
 const value={
     url,userdata,setuserdata,checkauth,getuserdata,
     allgames,setallgames,getallgames, // games related
-    searchval,setsearchval // for search bar
+    searchval,setsearchval, // for search bar,
+    addGametoUser,
+    //sockets 
+    socket,connectSocket,onlineusers,getallusers,allusers,setallusers
 
 }
 
