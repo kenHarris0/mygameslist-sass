@@ -43,8 +43,8 @@ const schema=mongoose.Schema({
             ref:"user"
         }
     ],
-    friendRequestsSent: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-friendRequestsReceived: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    friendRequestsSent: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+friendRequestsReceived: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     games:[
         {
         game:{

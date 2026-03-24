@@ -1,12 +1,15 @@
 import React, { useContext, useEffect } from 'react'
-import { gamecontext } from '../Context/Context'
-import { UserPlus } from 'lucide-react';
+import { gamecontext  } from '../Context/Context'
+import { UserPlus,Clock } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 const Souls = () => {
-    const {allusers,userdata,getuserdata,socket,getallusers,setallusers}=useContext(gamecontext)
+    const {url,allusers,userdata,getuserdata,socket,getallusers,setallusers,onlineusers,setuserdata}=useContext(gamecontext)
 
 
 useEffect(() => {
   getallusers();
+ 
 }, []);
 
 useEffect(() => {
@@ -35,7 +38,54 @@ useEffect(() => {
   socket.on("userCurrentPlaying", handler);
   return () => socket.off("userCurrentPlaying", handler);
 }, [socket, setallusers]);  
+//friend request handling
 
+
+
+
+
+const sendFriendReq=async(id)=>{
+  try{
+    const res=await axios.post(url+'/user/sendreq',{friendId:id},{withCredentials:true})
+    if(res.data.success){
+      toast.success("friend request sent successfully")
+     
+    }
+
+  }
+  catch(err){
+    console.log(err)
+  }
+}
+
+useEffect(()=>{
+if(!socket) return;
+
+const handler=(data)=>{
+
+  setuserdata(prev=>{
+    if(!prev) return prev;
+    const alreadyinSent=prev?.friendRequestsSent?.some(req=>req._id.toString()===data._id.toString())
+    if(alreadyinSent){
+      return prev;
+    }
+
+    return{
+      ...prev,
+      friendRequestsSent:[
+        ...(prev.friendRequestsSent),data
+      ]
+    }
+  })
+
+}
+
+
+
+  socket.on('friendreqsent',handler)
+  return ()=>socket.off('friendreqsent', handler)
+
+},[socket])
 
 console.log("allusers in souls", allusers);
 
@@ -75,7 +125,10 @@ console.log("allusers in souls", allusers);
     const prevplayed=user?.prevPlayed
     const prevplayedtime=user?.prevPlayingTime
 
-    console.log(currgame)
+const isonline=onlineusers?.some(usr=>usr.toString()===user._id.toString())
+   
+const haveSentReq=userdata?.friendRequestsSent.some(req=>req?._id.toString()===user._id.toString())
+const isafrined=userdata?.friends.some(fri=>fri?._id.toString()===user._id.toString())
       return (
         <div
           key={user._id}
@@ -83,11 +136,14 @@ console.log("allusers in souls", allusers);
         >
           <div>
             <div className='w-full flex items-center gap-4 mb-4'>
-              <img
+              <div className={`avatar avatar-${isonline?"online":"offline"}`}>
+<img
                 src={user.image}
                 alt=""
                 className='w-20 h-20 object-cover rounded-full border-2 border-purple-400/30 shadow-md'
               />
+              </div>
+              
 
               <div className='flex flex-col'>
                 <h1 className='text-xl font-extrabold leading-relaxed text-white'>
@@ -125,11 +181,25 @@ console.log("allusers in souls", allusers);
               </div>
             </div>
           </div>
-
-          <button className='cursor-pointer  w-full mt-5 h-12 flex justify-center items-center gap-3 rounded-2xl bg-purple-500/20 border border-purple-400/30 text-purple-200 font-semibold hover:bg-purple-900/30 transition-all duration-300'>
-            <UserPlus className='w-5 h-5' />
-            <span>Add Friend</span>
-          </button>
+          {isafrined?<button className='cursor-pointer w-full mt-5 h-12 flex justify-center items-center gap-3 rounded-2xl font-semibold transition-all duration-300 border
+    bg-green-800/10 text-gray-100/80 border-green-400/30 hover:bg-green-500/20 hover:scale-[1.02]'> Friends</button>:
+<button
+  onClick={() => sendFriendReq(user._id)}
+  className={`cursor-pointer w-full mt-5 h-12 flex justify-center items-center gap-3 rounded-2xl font-semibold transition-all duration-300 border
+    ${
+      haveSentReq
+        ? "bg-yellow-500/10 border-yellow-400/30 text-yellow-200 hover:bg-yellow-500/15"
+        : "bg-purple-500/20 border-purple-400/30 text-purple-200 hover:bg-purple-900/30 hover:scale-[1.02]"
+    }`}
+>
+  {haveSentReq ? (
+    <Clock className='w-5 h-5 animate-pulse' />
+  ) : (
+    <UserPlus className='w-5 h-5' />
+  )}
+  <span>{haveSentReq ? "Pending..." : "Add Friend"}</span>
+</button>
+}
         </div>
       );
     })}

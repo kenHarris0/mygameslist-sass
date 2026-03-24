@@ -3,10 +3,12 @@ import {Users,Gamepad2} from 'lucide-react'
 import {gamecontext} from '../Context/Context'
 const Socialhub = () => {
 
-  const {userdata,socket,onlineusers}=useContext(gamecontext)
+  const {userdata,socket,onlineusers,getuserdata}=useContext(gamecontext)
   const [currenttype,setcurrenttype]=useState("friends")
 
 
+
+  
 
   return (
     <div className='w-full h-full flex flex-col  p-4 gap-3 '>

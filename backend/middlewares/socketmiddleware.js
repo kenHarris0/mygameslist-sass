@@ -4,7 +4,7 @@ import User from '../models/User.js'
 
 export const socketMiddleware=async(socket,next)=>{
     try{
-        const token=socket?.handshake?.headers?.cookie?.split(';').find(row=>row.trim().startsWith('jwt=')).split('=')[1]
+        const token=socket?.handshake?.headers?.cookie?.split(';').find(row=>row.trim().startsWith('jwt='))?.split('=')[1]
         if(!token){
             return next(new Error('Authentication error'))
         }

@@ -112,7 +112,7 @@ return res.json({success:true,message:"user is authenticated"})
 export const getuserdata=async(req,res)=>{
     try{
         const userId=req.userId
-        const user=await User.findById(userId).select("-password").populate("friends").select("-password").populate("games.game")
+        const user=await User.findById(userId).select("-password").populate("friends").select("-password").populate("games.game").populate("friendRequestsSent","name image").populate("friendRequestsReceived","name image")
 
         if(!user){
             return res.json({success:false,message:"user not found"})
@@ -173,13 +173,22 @@ export const sendFriendReq=async(req,res)=>{
     
 
 const friendSocketId=returnUsersocket(friendId)
-if(friendSocketId){
-    io.to(friendSocketId).emit("friendreqreceived",{
-        _id:user._id,
-        name:user.name,
-        image:user.image
-    })
-}
+ if (friendSocketId) {
+      io.to(friendSocketId).emit("friendreqreceived", {
+        _id: user._id,
+        name: user.name,
+        image: user.image,
+      });
+    }
+
+    const userSocketId=returnUsersocket(userId)
+ if (userSocketId) {
+      io.to(userSocketId).emit("friendreqsent", {
+        _id: friend._id,
+        name: friend.name,
+        image: friend.image,
+      });
+    }
 
 res.json({success:true,message:"friend added successfully"})
 
@@ -190,6 +199,11 @@ res.json({success:true,message:"friend added successfully"})
         console.log(err)
     }
 }
+
+
+
+
+
 
 export const acceptFriendReq=async(req,res)=>{
     try{
@@ -237,12 +251,21 @@ $pull:{
     friendRequestsSent:userId
 }})
 
-const friendSocketId=returnUsersocket(friendId)
-if(friendSocketId){
-    io.to(friendSocketId).emit("friendreqaccepted",{
+const senderSocketId=returnUsersocket(friendId)
+if(senderSocketId){
+    io.to(senderSocketId).emit("friendreqaccepted-sender",{
         _id:user._id,
         name:user.name,
         image:user.image
+    })
+}
+
+const receiverSocketId=returnUsersocket(userId)
+if(receiverSocketId){
+    io.to(receiverSocketId).emit("friendreqaccepted-receiver",{
+        _id:friend._id,
+        name:friend.name,
+        image:friend.image
     })
 }
 res.json({success:true,message:"friend added successfully"})
@@ -289,14 +312,16 @@ $pull:{
 }})
 
 
-const friendSocketId=returnUsersocket(friendId)
-if(friendSocketId){
-    io.to(friendSocketId).emit("friendreqrejected",{
-         _id:user._id,
+const senderSocketId=returnUsersocket(friendId)
+if(senderSocketId){
+    io.to(senderSocketId).emit("friendreqrejected-sender",{
+        _id:user._id,
         name:user.name,
         image:user.image
     })
 }
+
+
 res.json({success:true,message:"friend req rejected "})
 }
     catch(err){
