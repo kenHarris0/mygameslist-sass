@@ -1,4 +1,4 @@
-import React, { Children, createContext, useEffect, useState,useRef } from 'react'
+import React, { Children, createContext, useEffect, useState,useRef ,useMemo} from 'react'
 import axios from 'axios'
 import {toast} from 'react-toastify'
 import {io} from 'socket.io-client'
@@ -128,6 +128,47 @@ const getuserdata=async()=>{
         }
     }
 
+    const [Privatemessages,setPrivatemessages]=useState(null)
+
+    const getPrivateMessages=async(id)=>{
+        try{
+            const res=await axios.post(url+'/msg/get',{receiverId:id},{withCredentials:true})
+            if(res.data.success){
+                setPrivatemessages(res.data.payload)
+
+            }
+
+        }
+        catch(err){
+            console.log(err)
+        }
+    }
+useEffect(() => {
+  if (!socket) return;
+
+  const handler = ({ _id, gameId, currentlyPlaying, status, prevPlayed, prevPlayingTime }) => {
+    setallusers(prev =>
+      prev.map(user => {
+        if (user._id.toString() !== _id.toString()) return user;
+
+        return {
+          ...user,
+          currentlyPlaying: currentlyPlaying ?? user.currentlyPlaying,
+          prevPlayed: prevPlayed ?? user.prevPlayed,
+          prevPlayingTime: prevPlayingTime ?? user.prevPlayingTime,
+          games: user.games.map(g =>
+            g.game?._id?.toString() === gameId?.toString()
+              ? { ...g, status: status ?? g.status }
+              : g
+          )
+        };
+      })
+    );
+  };
+
+  socket.on("userCurrentPlaying", handler);
+  return () => socket.off("userCurrentPlaying", handler);
+}, [socket, setallusers]);  
     useEffect(()=>{
         checkauth()
 
@@ -143,14 +184,32 @@ useEffect(()=>{
 
 
 
-const value={
-    url,userdata,setuserdata,checkauth,getuserdata,
-    allgames,setallgames,getallgames, // games related
-    searchval,setsearchval, // for search bar,
-    addGametoUser,
-    //sockets 
-    socket,connectSocket,onlineusers,getallusers,allusers,setallusers
+const value = {
+  url,
+  userdata,
+  setuserdata,
+  checkauth,
+  getuserdata,
 
+  allgames,
+  setallgames,
+  getallgames,
+
+  searchval,
+  setsearchval,
+
+  addGametoUser,
+
+  socket,
+  connectSocket,
+  onlineusers,
+  getallusers,
+  allusers,
+  setallusers,
+
+  Privatemessages,
+  setPrivatemessages,
+  getPrivateMessages
 }
 
   return (

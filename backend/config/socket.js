@@ -32,7 +32,9 @@ io.on('connection',(socket)=>{
 
     mapuseridtosocket[socket.userId]=socket.id
 
-    socket.emit('onlineusers',Object.keys(mapuseridtosocket))
+   
+
+    io.emit('onlineusers',Object.keys(mapuseridtosocket))
 
 
 
@@ -41,6 +43,7 @@ io.on('connection',(socket)=>{
     socket.on('disconnect',()=>{
         console.log(`${socket.user.name} disconnected with id ${socket.id}`)
       delete  mapuseridtosocket[socket.userId]
+      io.emit('onlineusers',Object.keys(mapuseridtosocket))
     })
 
 

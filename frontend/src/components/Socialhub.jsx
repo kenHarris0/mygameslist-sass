@@ -1,14 +1,19 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState,useEffect } from 'react'
 import {Users,Gamepad2} from 'lucide-react'
+import {useNavigate} from 'react-router-dom'
 import {gamecontext} from '../Context/Context'
 const Socialhub = () => {
 
-  const {userdata,socket,onlineusers,getuserdata}=useContext(gamecontext)
+  const {userdata,socket,onlineusers,getuserdata,allusers}=useContext(gamecontext)
   const [currenttype,setcurrenttype]=useState("friends")
+const friendIds = new Set(
+  userdata?.friends?.map(f => f._id.toString())
+);
 
-
-
-  
+useEffect(() => {
+  console.log("Socialhub updated", allusers);
+}, [allusers]);
+  const navv=useNavigate()
 
   return (
     <div className='w-full h-full flex flex-col  p-4 gap-3 '>
@@ -34,25 +39,42 @@ const Socialhub = () => {
       </div>
 
       <div className='w-full min-h-100  flex flex-col gap-2'>
-        { currenttype==="friends" && (userdata?.friends?.map((friend,ind)=>{
-          return(
-            <div className='w-full flex h-15 '>
+        {currenttype === "friends" &&
+  allusers
+    ?.filter(user => friendIds.has(user._id.toString()))
+    ?.map((friend) => {
 
-              <div className='w-[20%] h-full flex items-center p-2'>
-                <img src={friend?.image} alt="" className='w-12 h-12 rounded-full object-cover'/>
+ 
+    
 
-              </div>
+      const isOnline = onlineusers?.includes(friend._id.toString());
 
-              <div className='w-[80%] h-full flex flex-col items-start justify-center  p-2'>
-                <h1 className='text-base text-gray-300 leading-relaxed font-medium'>{friend.name}</h1>
-                <p className='text-xs text-pink-600/80 leading-relaxed font-medium'>{friend.currentlyPlaying || "idle"}</p>
+      return (
+        <div className="w-full flex h-15 cursor-pointer items-center" onClick={()=>navv(`/privatechat/${friend._id}/${encodeURIComponent(friend?.name)}`)}>
 
-              </div>
-              
-
+          <div className={`avatar  ${isOnline ? "avatar-online" : "avatar-offline"}`} >
+            <div className="w-12 h-12 rounded-full">
+              <img src={friend?.image} />
             </div>
-          )
-        }))}
+          </div>
+
+          <div className="w-[80%] flex flex-col justify-center p-2">
+            <h1 className="text-base text-gray-300 font-medium">
+              {friend.name}
+            </h1>
+
+            <p className="text-xs text-pink-600/80 overflow-x-auto">
+  {friend.currentlyPlaying
+    ? `Playing ${friend.currentlyPlaying}`
+    : friend.prevPlayed
+    ? `Played ${friend.prevPlayed} for ${friend.prevPlayingTime} mins`
+    : "Idle"}
+</p>
+          </div>
+
+        </div>
+      );
+    })}
 
       </div>
     </div>

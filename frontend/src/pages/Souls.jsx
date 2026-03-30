@@ -3,41 +3,17 @@ import { gamecontext  } from '../Context/Context'
 import { UserPlus,Clock } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 const Souls = () => {
     const {url,allusers,userdata,getuserdata,socket,getallusers,setallusers,onlineusers,setuserdata}=useContext(gamecontext)
-
+const navv=useNavigate()
 
 useEffect(() => {
   getallusers();
  
 }, []);
 
-useEffect(() => {
-  if (!socket) return;
 
-  const handler = ({ _id, gameId, currentlyPlaying, status, prevPlayed, prevPlayingTime }) => {
-    setallusers(prev =>
-      prev.map(user => {
-        if (user._id.toString() !== _id.toString()) return user;
-
-        return {
-          ...user,
-          currentlyPlaying: currentlyPlaying ?? user.currentlyPlaying,
-          prevPlayed: prevPlayed ?? user.prevPlayed,
-          prevPlayingTime: prevPlayingTime ?? user.prevPlayingTime,
-          games: user.games.map(g =>
-            g.game?._id?.toString() === gameId?.toString()
-              ? { ...g, status: status ?? g.status }
-              : g
-          )
-        };
-      })
-    );
-  };
-
-  socket.on("userCurrentPlaying", handler);
-  return () => socket.off("userCurrentPlaying", handler);
-}, [socket, setallusers]);  
 //friend request handling
 
 
@@ -132,7 +108,9 @@ const isafrined=userdata?.friends.some(fri=>fri?._id.toString()===user._id.toStr
       return (
         <div
           key={user._id}
-          className='w-full min-h-80 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 flex flex-col justify-between shadow-lg hover:scale-[1.02] hover:border-purple-400/30 transition-all duration-300'
+          className='w-full min-h-80 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 flex flex-col justify-between shadow-lg hover:scale-[1.02]
+           hover:border-purple-400/30 transition-all duration-300'
+           onClick={()=>navv(`/privatechat/${user._id}/${encodeURIComponent(user.name)}`)}
         >
           <div>
             <div className='w-full flex items-center gap-4 mb-4'>
@@ -184,7 +162,9 @@ const isafrined=userdata?.friends.some(fri=>fri?._id.toString()===user._id.toStr
           {isafrined?<button className='cursor-pointer w-full mt-5 h-12 flex justify-center items-center gap-3 rounded-2xl font-semibold transition-all duration-300 border
     bg-green-800/10 text-gray-100/80 border-green-400/30 hover:bg-green-500/20 hover:scale-[1.02]'> Friends</button>:
 <button
-  onClick={() => sendFriendReq(user._id)}
+  onClick={(e) => {
+    e.stopPropagation();
+    sendFriendReq(user._id)}}
   className={`cursor-pointer w-full mt-5 h-12 flex justify-center items-center gap-3 rounded-2xl font-semibold transition-all duration-300 border
     ${
       haveSentReq

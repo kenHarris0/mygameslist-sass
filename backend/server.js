@@ -8,7 +8,7 @@ import  connectionDB from './config/db.js';
 import userRouter from './routes/user.routes.js'
 import gameRouter from './routes/game.route.js'
 import {app,server} from './config/socket.js'
-
+import messagerouter from './routes/message.routes.js'
 
 //     configs     //
 
@@ -26,7 +26,7 @@ app.use(cookieParser());
 
 app.use('/user',userRouter)
 app.use('/game',gameRouter)
-
+app.use('/msg',messagerouter)
 
 
 // server running

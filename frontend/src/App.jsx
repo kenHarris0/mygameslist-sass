@@ -8,6 +8,7 @@ import Gamepage from './pages/Gamepage.jsx'
 import Profile from './pages/Profile.jsx'
 import Gamedesc from './pages/Gamedesc.jsx'
 import Souls from './pages/Souls.jsx'
+import Privatechat from './pages/Privatechat.jsx'
 const App = () => {
   return (
     <div  className='w-screen min-h-screen flex flex-col items-center'>
@@ -20,6 +21,7 @@ const App = () => {
          <Route path='/profile' element={<Profile/>} />
          <Route path='/game/:id' element={<Gamedesc/>} />
          <Route path='/souls' element={<Souls/>} />
+         <Route path='/privatechat/:id/:name' element={<Privatechat/>}/>
       </Routes>
       
     </div>
