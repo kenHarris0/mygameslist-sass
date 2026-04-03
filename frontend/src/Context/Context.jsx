@@ -168,13 +168,61 @@ useEffect(() => {
 
   socket.on("userCurrentPlaying", handler);
   return () => socket.off("userCurrentPlaying", handler);
+
+//frined req handling or sending part
+  
+
+
 }, [socket, setallusers]);  
-    useEffect(()=>{
+
+
+const sendFriendReq=async(id)=>{
+  try{
+    const res=await axios.post(url+'/user/sendreq',{friendId:id},{withCredentials:true})
+    if(res.data.success){
+      toast.success("friend request sent successfully")
+     
+    }
+
+  }
+  catch(err){
+    console.log(err)
+  }
+}
+
+useEffect(()=>{
+if(!socket) return;
+
+const handler=(data)=>{
+
+  setuserdata(prev=>{
+    if(!prev) return prev;
+    const alreadyinSent=prev?.friendRequestsSent?.some(req=>req._id.toString()===data._id.toString())
+    if(alreadyinSent){
+      return prev;
+    }
+
+    return{
+      ...prev,
+      friendRequestsSent:[
+        ...(prev.friendRequestsSent),data
+      ]
+    }
+  })
+
+}
+
+
+
+  socket.on('friendreqsent',handler)
+  return ()=>socket.off('friendreqsent', handler)
+
+},[socket])
+
+
+useEffect(()=>{
         checkauth()
-
-        
-
-    },[])
+},[])
 
 useEffect(()=>{
     getallgames()
@@ -209,7 +257,10 @@ const value = {
 
   Privatemessages,
   setPrivatemessages,
-  getPrivateMessages
+  getPrivateMessages,
+
+  sendFriendReq,
+
 }
 
   return (

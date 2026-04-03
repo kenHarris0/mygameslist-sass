@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 const Souls = () => {
-    const {url,allusers,userdata,getuserdata,socket,getallusers,setallusers,onlineusers,setuserdata}=useContext(gamecontext)
+    const {url,allusers,userdata,getuserdata,socket,getallusers,setallusers,onlineusers,setuserdata,sendFriendReq}=useContext(gamecontext)
 const navv=useNavigate()
 
 useEffect(() => {
@@ -19,49 +19,6 @@ useEffect(() => {
 
 
 
-
-const sendFriendReq=async(id)=>{
-  try{
-    const res=await axios.post(url+'/user/sendreq',{friendId:id},{withCredentials:true})
-    if(res.data.success){
-      toast.success("friend request sent successfully")
-     
-    }
-
-  }
-  catch(err){
-    console.log(err)
-  }
-}
-
-useEffect(()=>{
-if(!socket) return;
-
-const handler=(data)=>{
-
-  setuserdata(prev=>{
-    if(!prev) return prev;
-    const alreadyinSent=prev?.friendRequestsSent?.some(req=>req._id.toString()===data._id.toString())
-    if(alreadyinSent){
-      return prev;
-    }
-
-    return{
-      ...prev,
-      friendRequestsSent:[
-        ...(prev.friendRequestsSent),data
-      ]
-    }
-  })
-
-}
-
-
-
-  socket.on('friendreqsent',handler)
-  return ()=>socket.off('friendreqsent', handler)
-
-},[socket])
 
 console.log("allusers in souls", allusers);
 
