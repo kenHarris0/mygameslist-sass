@@ -48,7 +48,7 @@ useEffect(()=>{
         <p className='text-sm font-medium'>
             <p className='text-semibold'>{game.totalTimePlayed/60} Hours</p>
           
-          <progress class="progress progress-success w-56" value={game.totalTimePlayed} max="600000"></progress>
+          <progress className="progress progress-success w-56" value={game.totalTimePlayed} max="600000"></progress>
         </p>
 
         {/* status badge */}

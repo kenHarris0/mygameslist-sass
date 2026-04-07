@@ -5,6 +5,7 @@ const partySlice=createSlice({
     initialState:{
         parties:[],
         loading:false,
+        
 
     },
     reducers:{
@@ -13,20 +14,34 @@ const partySlice=createSlice({
         },
        
         deleteparty:(state,action)=>{
-            state.parties=state.parties.filter(party=>party._id.toString()!==action.payload.toString())
+            state.parties=state.parties.filter(party=>party?._id.toString()!==action.payload?.toString())
 
         },
-        updatePartyNewJoin:(state,action)=>{
-            const updatedparty=action.payload
+        updatePartyNewJoin: (state, action) => {
+  const updatedparty = action.payload;
 
-            const index=state.parties.findIndex(party=>party._id.toString()===updatedparty._id.toString())
+  state.parties = state.parties.map(party =>
+    party._id.toString() === updatedparty._id.toString()
+      ? updatedparty
+      : party
+  );
+},
 
-            if(index!==-1){
-                state.parties[index]=updatedparty
-            }
-        }
+        newpartycreated: (state, action) => {
+    const newparty = action.payload;
+
+    const exists = state.parties.some(
+        party => party._id.toString() === newparty._id.toString()
+    );
+
+    if (!exists) {
+        state.parties.push(newparty);
+    }
+},
+
+        
     }
 })
 
-export const {getallparties,deleteparty,updatePartyNewJoin}=partySlice.actions
+export const {getallparties,deleteparty,updatePartyNewJoin,newpartycreated}=partySlice.actions
 export default partySlice.reducer

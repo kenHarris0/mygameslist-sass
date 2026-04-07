@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { gamecontext  } from '../Context/Context'
 import { UserPlus,Clock } from 'lucide-react';
 import axios from 'axios';
@@ -13,14 +13,12 @@ useEffect(() => {
  
 }, []);
 
-
-//friend request handling
-
+const [searchfilter,setsearchfilter]=useState("")
 
 
 
 
-console.log("allusers in souls", allusers);
+
 
   return (
    <div className='w-[80%] mx-auto min-h-screen flex flex-col items-start justify-start pt-20'>
@@ -36,6 +34,8 @@ console.log("allusers in souls", allusers);
     <input
       type="text"
       placeholder='Search by game or name'
+      value={searchfilter}
+      onChange={(e)=>setsearchfilter(e.target.value)}
       className='border border-white/10 bg-white/5 w-full h-13 rounded-3xl text-sm text-white placeholder:text-white/40 px-4 outline-none focus:border-purple-500'
     />
 
@@ -50,7 +50,7 @@ console.log("allusers in souls", allusers);
   </div>
 
   <div className='w-full overflow-y-auto grid grid-cols-4 gap-5 border border-white/20 rounded-2xl p-5 bg-white/5'>
-    {allusers?.map((user) => {
+    {allusers?.filter(usr=>usr.name.toLowerCase().startsWith(searchfilter.toLowerCase())).map((user) => {
 
     const currgame=user?.games?.find(game=>game.game.name===user.currentlyPlaying)
     const isawayingame=currgame?.status==="Away"

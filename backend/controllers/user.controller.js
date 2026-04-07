@@ -77,8 +77,9 @@ export const login=async(req,res)=>{
     catch(err){
     console.log(err)
 }
+const finaluser = await User.findOne({ email }).select("-password");
 
-    res.json({success:true,payload:user})
+    res.json({success:true,payload:finaluser})
 }
 catch(err){
     console.log(err)

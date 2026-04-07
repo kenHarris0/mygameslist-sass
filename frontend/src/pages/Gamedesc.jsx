@@ -1,12 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { gamecontext } from '../Context/Context'
 import { Share2 } from 'lucide-react';
 import { CirclePlay,BookmarkCheck,Bookmark,CircleCheckBig  } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { UserPlus,Handshake  } from 'lucide-react';
+
 import Partycomponent from '../components/Partycomponent';
+
+
 const Gamedesc = () => {
 
   const {id}=useParams()
@@ -22,7 +24,7 @@ const Gamedesc = () => {
     }
   }, [currgame])
 
-
+const navv=useNavigate()
 
 
 
@@ -92,6 +94,10 @@ useEffect(() => {
 
   setCurrentlyPlayers(filtered);
 }, [allusers, currgame]);
+
+//create party feature
+
+
 
 
 
@@ -320,7 +326,13 @@ useEffect(() => {
   </div>
 {/* PARTY PART AT THE BOTTOM                                           */}
   <div className='w-[80%] mx-auto h-100 border-4 border-gray-500 rounded-2xl flex flex-col p-4'>
-    <h1 className='text-3xl font-extrabold text-slate-200 tracking-wide mb-4'>Partie's available</h1>
+    <div className='flex w-full items-center justify-between p-2'>
+<h1 className='text-3xl font-extrabold text-slate-200 tracking-wide mb-4'>Partie's available</h1>
+
+<button className='w-40 h-12 rounded-full border-0 bg-linear-to-r from-pink-500 to-purple-500 text-white text-base font-bold 
+shadow-lg hover:scale-105 transition duration-200 cursor-pointer' onClick={()=>navv(`/createparty/${encodeURIComponent(currgame?.game?.name)}/${currgame?.game?._id}`)}>Create party</button>
+    </div>
+    
     <Partycomponent gameId={currgame?._id} gamename={currgame?.game?.name}/>
 
   </div>

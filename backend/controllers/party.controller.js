@@ -6,7 +6,8 @@ import {io,returnUsersocket} from '../config/socket.js'
 
 export const createParty=async(req,res)=>{
     try{
-        const {name,members,game}=req.body;
+        const {name,members,game,Open,limit}=req.body;
+        const {userId}=req
 
         if(!name || !members || members.length<1 || !game){
             return res.json({success:false,message:"Please provide all details"})
@@ -15,9 +16,14 @@ export const createParty=async(req,res)=>{
         const newparty=new Party({
             name,
             members,
-            game
+            game,
+            Open,
+            limit,
+            admin:userId
         })
         await newparty.save();
+
+        io.emit('newpartycreated',newparty)
 
         res.json({success:true,message:"party created successfully",party:newparty})
 
@@ -83,9 +89,11 @@ export const deleteParty=async(req,res)=>{
         party.members.forEach(memberId=>{
     const socketId=returnUsersocket(memberId.toString())
     if(socketId){
-        io.to(socketId).emit('partyupdate',party)
+        io.to(socketId).emit('partydeletednotification',party)
     }
  })
+
+ io.emit('partyDeleted',partyId)
 
         res.json({success:true,message:"party deleted successfully"})
 

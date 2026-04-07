@@ -1,30 +1,19 @@
 import React, { useContext, useEffect } from 'react'
 import { useSelector,useDispatch } from 'react-redux'
-import {getallparties,deleteparty,updatePartyNewJoin} from '../Redux/Slices/PartySlice'
+import {deleteparty,updatePartyNewJoin,newpartycreated} from '../Redux/Slices/PartySlice'
 import axios from 'axios'
 import { gamecontext } from '../Context/Context'
-import { toast } from 'react-toastify'
+import { Trash  } from 'lucide-react';
+
+import { useNavigate } from 'react-router-dom'
 const Partycomponent = ({gameId,gamename}) => {
 
 const {url,userdata,socket}=useContext(gamecontext)
 
 const dispatch=useDispatch()
 //console.log(gameId,gamename)
+const navv=useNavigate()
 
-  useEffect(()=>{
-    if(!userdata) return;
-    const fetcher=async()=>{
-    const res=await axios.get(url+'/party/getallparty',{withCredentials:true})
-    if(res.data.success){
-      dispatch(getallparties(res.data.payload))
-
-    }
-
-
-    }
-
-    fetcher()
-  },[userdata])
 
   const allparty=useSelector(state=>state.party.parties)
   
@@ -50,22 +39,9 @@ const joinParty=async(partyId)=>{
     console.log(err)
   }
 }
-console.log(allparty)
-useEffect(()=>{
-if(!socket) return;
-     
-const handler=(data)=>{
-  const {user,party}=data
-  toast.success(`${user?.name} joined the party`)
-  dispatch(updatePartyNewJoin(party))
-  
-}
 
-socket.on('newpartyjoin',handler)
 
-return ()=>socket.off('newpartyjoin',handler)
 
-},[socket])
 //leave party
 const leaveParty=async(partyId)=>{
   try{
@@ -81,39 +57,26 @@ const leaveParty=async(partyId)=>{
   }
 }
 
-useEffect(()=>{
-if(!socket) return;
-     
-const handler=(data)=>{
-  const {user,party}=data
-  toast.info(`${user?.name} left the party`)
-  dispatch(updatePartyNewJoin(party))
-  
+const deleteParty=async(partyId)=>{
+try{
+    const res=await axios.post(url+'/party/delete',{partyId:partyId},{withCredentials:true})
+    if(res.data.success){
+      dispatch(deleteparty(partyId))
+    }
+    
+
+  }
+  catch(err){
+    console.log(err)
+  }
 }
 
-socket.on('leftpartyupdate',handler)
-
-return ()=>socket.off('leftpartyupdate',handler)
-
-},[socket])
 
 
 
 
-useEffect(()=>{
-if(!socket) return;
-     
-const handler=(data)=>{
-  
-  dispatch(updatePartyNewJoin(data))
-  
-}
 
-socket.on('partyUpdated',handler)
 
-return ()=>socket.off('partyUpdated',handler)
-
-},[socket])
 
 
 
@@ -121,23 +84,36 @@ return ()=>socket.off('partyUpdated',handler)
 
   
   return (
-   <div className="w-[70%]  h-full grid grid-cols-2 gap-3 p-3">
+   <div className="w-[70%]  h-full grid grid-cols-2 gap-3 p-3 overflow-y-auto">
   {gameparties?.map((party, ind) => {
     const isUserinParty=party?.members?.some(member=>member._id.toString()===userdata?._id.toString())
     console.log(isUserinParty)
     return (
       <div
         key={ind}
-        className="bg-gray-900 border overflow-y-auto border-gray-700 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition flex flex-col justify-between h-22.5"
+        className="bg-gray-900 cursor-pointer border overflow-y-auto border-gray-700 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition flex flex-col justify-between h-22.5"
+      onClick={(e)=>{
+        e.stopPropagation()
+        navv(`/partychat/${party?._id}`)
+      }}
       >
 
         {/* Top row */}
         <div className="flex items-center justify-between">
 
           {/* Name */}
-          <h1 className="text-xl font-semibold text-white truncate">
+
+          <div className='flex items-center justify-start gap-2'>
+<h1 className="text-xl font-semibold text-white truncate">
             {party?.name}
+            
           </h1>
+           {party?.admin?.toString()===userdata._id?.toString() && <Trash  className='w-3 h-3 hover:text-red-500 cursor-pointer'
+           onClick={()=>deleteParty(party?._id)}
+           /> }
+         
+          </div>
+          
 
           {/* Status */}
           <span
@@ -179,10 +155,14 @@ return ()=>socket.off('partyUpdated',handler)
 
           {/* Join button */}
           {!isUserinParty ?
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs cursor-pointer" onClick={()=>joinParty(party._id)}>
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs cursor-pointer" onClick={(e)=>{
+            e.stopPropagation()
+            joinParty(party._id)}}>
             Join
           </button>:
-            <button className="bg-red-400 hover:bg-red-600 text-white px-2 py-1 rounded text-xs cursor-pointer" onClick={()=>leaveParty(party._id)}>
+            <button className="bg-red-400 hover:bg-red-600 text-white px-2 py-1 rounded text-xs cursor-pointer" onClick={(e)=>{
+              e.stopPropagation()
+              leaveParty(party._id)}}>
             Leave
           </button>
   }

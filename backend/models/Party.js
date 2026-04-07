@@ -26,6 +26,10 @@ const schema=new mongoose.Schema({
     limit:{
         type:Number,
         default:4
+    },
+    admin:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"user"
     }
     
 

@@ -33,6 +33,6 @@ const schema=new mongoose.Schema({
     ]
 },{timestamps:true})
 
-const grpmessage=mongoose.models.grpmessage || mongoose.model('grpmessage',schema)
+const partymessage=mongoose.models.partymessage || mongoose.model('partymessage',schema)
 
-export default grpmessage;
+export default partymessage;

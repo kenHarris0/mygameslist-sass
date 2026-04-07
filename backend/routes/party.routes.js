@@ -4,8 +4,8 @@
     const router=express.Router();
     import {authmiddleware} from '../middlewares/userAuth.middleware.js'
 
-    router.post('/add',createParty)
-    router.post('/delete',deleteParty)
+    router.post('/add',authmiddleware,createParty)
+    router.post('/delete',authmiddleware,deleteParty)
     router.post('/join',authmiddleware,joinParty)
     router.post('/leave',authmiddleware,leaveParty)
     router.get('/getallparty',authmiddleware,getallparty)
