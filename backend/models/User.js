@@ -46,6 +46,16 @@ const schema=mongoose.Schema({
     ],
     friendRequestsSent: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
 friendRequestsReceived: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+PartyRequestsSent: [{
+  partyId: { type: mongoose.Schema.Types.ObjectId, ref: "party" },
+  receiverId: { type: mongoose.Schema.Types.ObjectId, ref: "user" }
+}],
+PartyRequestsReceived: [{
+
+partyId: { type: mongoose.Schema.Types.ObjectId, ref: "party" },
+    senderId:{ type: mongoose.Schema.Types.ObjectId, ref: "user" }
+
+}],
     games:[
         {
         game:{

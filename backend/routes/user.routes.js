@@ -1,7 +1,8 @@
 import express from 'express';
 
 import { register,login,logout,getuserdata,checkAuth ,getUserGames,changeProfilePicture,editProfile,editcurrentlyplaying,sendFriendReq,acceptFriendReq,
-    rejectFriendReq,getallusers} from '../controllers/user.controller.js';
+    rejectFriendReq,getallusers,
+         sendPartyReq,acceptPartyReq,rejectPartyReq} from '../controllers/user.controller.js';
 const router=express.Router();
 import { authmiddleware } from '../middlewares/userAuth.middleware.js';
 
@@ -22,5 +23,17 @@ router.post('/editCurrentplaying',authmiddleware,editcurrentlyplaying)
 router.post('/sendreq',authmiddleware,sendFriendReq)
 router.post('/accept',authmiddleware,acceptFriendReq)
 router.post('/reject',authmiddleware,rejectFriendReq)
+
+
+//party request handling for private parties
+
+router.post('/sendpartyreq',authmiddleware,sendPartyReq)
+router.post('/acceptpartyreq',authmiddleware,acceptPartyReq)
+router.post('/rejectpartyreq',authmiddleware,rejectPartyReq)
+
+
+
+
+
 
 export default router;

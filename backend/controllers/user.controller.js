@@ -5,6 +5,7 @@ import Game from '../models/Game.js'
 import cloudinary from '../config/Cloudinary.js';
 import {io} from '../config/socket.js'
 import {returnUsersocket} from '../config/socket.js'
+import Party from '../models/Party.js';
 
 
 export const register=async(req,res)=>{
@@ -113,8 +114,10 @@ return res.json({success:true,message:"user is authenticated"})
 export const getuserdata=async(req,res)=>{
     try{
         const userId=req.userId
-        const user=await User.findById(userId).select("-password").populate("friends").select("-password").populate("games.game").populate("friendRequestsSent","name image").populate("friendRequestsReceived","name image")
-
+        const user=await User.findById(userId).select("-password").populate("friends").select("-password").
+        populate("games.game").populate("friendRequestsSent","name image").populate("friendRequestsReceived","name image").
+        populate("PartyRequestsSent.receiverId","name image").populate("PartyRequestsReceived.senderId","name image").
+        populate("PartyRequestsSent.partyId","name").populate("PartyRequestsReceived.partyId","name")
         if(!user){
             return res.json({success:false,message:"user not found"})
         }
@@ -460,3 +463,224 @@ export const getallusers=async(req,res)=>{
         console.log(err)
     }
 }
+
+export const sendPartyReq = async (req, res) => {
+    try {
+        const { userId } = req;
+        const { partyId } = req.body;
+
+        if (!partyId) {
+            return res.json({ success: false, message: "party id is required" });
+        }
+
+        const user = await User.findById(userId);
+        const party = await Party.findById(partyId).populate("admin");
+
+        if (!party) {
+            return res.json({ success: false, message: "Party not found" });
+        }
+
+        const admin = party.admin._id;
+
+        
+        if (admin.toString() === userId.toString()) {
+            return res.json({ success: false, message: "You are the admin" });
+        }
+
+        
+        const alreadySent = user.PartyRequestsSent.some(
+            req =>
+                req.partyId.toString() === partyId &&
+                req.receiverId.toString() === admin.toString()
+        );
+
+        if (alreadySent) {
+            return res.json({ success: false, message: "Request already sent" });
+        }
+
+        
+        await User.updateOne(
+            { _id: userId },
+            {
+                $push: {
+                    PartyRequestsSent: {
+                        partyId: partyId,
+                        receiverId: admin
+                    }
+                }
+            }
+        );
+
+      
+        await User.updateOne(
+            { _id: admin },
+            {
+                $push: {
+                    PartyRequestsReceived: {
+                        partyId: partyId,
+                        senderId: userId
+                    }
+                }
+            }
+        );
+
+        // 🔌 socket
+        const adminSocketId = returnUsersocket(admin);
+        if (adminSocketId) {
+            io.to(adminSocketId).emit("party-req-received", {
+                _id: userId,
+                name: user.name,
+                image: user.image,
+                partyId ,
+                partyname:party.name
+            });
+        }
+
+        res.json({ success: true, message: "party join req sent successfully" });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const acceptPartyReq = async (req, res) => {
+    try {
+        const { userId } = req; // admin
+        const { senderId, partyId } = req.body;
+
+        if (!senderId || !partyId) {
+            return res.json({ success: false, message: "senderId and partyId required" });
+        }
+
+        const user = await User.findById(userId);
+        const party = await Party.findById(partyId);
+        const sender = await User.findById(senderId);
+
+        
+        if (!party) {
+            return res.json({ success: false, message: "Party not found" });
+        }
+
+       
+        //already in reqreceived
+        const reqexist=user.PartyRequestsReceived.some(req=>req.partyId.toString()===partyId.toString() && req.senderId.toString()===senderId.toString())
+        if(!reqexist){
+            return res.json({success:false,message:"no such requests"})
+        }
+
+        
+        if (party.members.length >= party.limit) {
+            return res.json({ success: false, message: "Party is full" });
+        }
+
+        await User.updateOne(
+            { _id: userId },
+            { $pull: { PartyRequestsReceived:{
+                partyId:partyId,
+                senderId:senderId
+            } } }
+        );
+
+        await User.updateOne(
+            { _id: senderId },
+            { $pull: { PartyRequestsSent: {
+                partyId,
+                receiverId:userId
+            } } }
+        );
+
+    
+        await Party.updateOne(
+            { _id: partyId },
+            { $addToSet: { members: senderId } }
+        );
+
+        const senderSocketId = returnUsersocket(senderId);
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("party-req-accepted", {
+                _id: sender._id,
+                name: sender.name,
+                image: sender.image,
+                adminId:userId,
+                partyId,
+                partyname:party.name,
+                party:await Party.findById(partyId).populate("members").select("-password -email")
+            });
+        }
+
+        res.json({ success: true, message: "party join req accepted successfully",payload:{
+            partyId,
+            userId:senderId,
+            party:await Party.findById(partyId).populate("members").select("-password -email")
+        } });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const rejectPartyReq = async (req, res) => {
+    try {
+        const { userId } = req;//admin
+        const { senderId,partyId } = req.body;
+
+        if (!senderId) {
+            return res.json({ success: false, message: "sender request id is required" });
+        }
+
+        const user = await User.findById(userId);
+         const party = await Party.findById(partyId);
+    const sender = await User.findById(senderId);
+        
+        if (!party) {
+            return res.json({ success: false, message: "Party not found" });
+        }
+
+
+        
+        const reqexist=user.PartyRequestsReceived.some(req=>req.partyId.toString()===partyId.toString() && req.senderId.toString()===senderId.toString())
+        if(!reqexist){
+            return res.json({success:false,message:"no such requests"})
+        }
+
+        await User.updateOne(
+            { _id: userId },
+            { $pull: { PartyRequestsReceived:{
+                partyId:partyId,
+                senderId:senderId
+            } } }
+        );
+
+        await User.updateOne(
+            { _id: senderId },
+            { $pull: { PartyRequestsSent: {
+                partyId,
+                receiverId:userId
+            } } }
+        );
+
+        const senderSocketId = returnUsersocket(senderId);
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("party-req-rejected", {
+                _id: sender._id,
+                name: sender.name,
+                image: sender.image,
+                partyId,
+                partyname:party.name
+
+            });
+        }
+
+        res.json({ success: true, message: "party join req rejected",payload:{
+            partyId,
+            userId:senderId,
+           
+        } });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};

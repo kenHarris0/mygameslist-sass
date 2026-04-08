@@ -114,6 +114,7 @@ const {userId}=req
     }
  },{new:true}).populate("members","-password -email")
 
+
  party.members.forEach(member=>{
 if(member._id.toString()!==userId.toString()){
     const socketId=returnUsersocket(member._id.toString())

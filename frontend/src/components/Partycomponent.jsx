@@ -4,11 +4,11 @@ import {deleteparty,updatePartyNewJoin,newpartycreated} from '../Redux/Slices/Pa
 import axios from 'axios'
 import { gamecontext } from '../Context/Context'
 import { Trash  } from 'lucide-react';
-
+import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 const Partycomponent = ({gameId,gamename}) => {
 
-const {url,userdata,socket}=useContext(gamecontext)
+const {url,userdata,socket,setuserdata,getuserdata}=useContext(gamecontext)
 
 const dispatch=useDispatch()
 //console.log(gameId,gamename)
@@ -48,6 +48,7 @@ const leaveParty=async(partyId)=>{
     const res=await axios.post(url+'/party/leave',{partyId:partyId},{withCredentials:true})
     if(res.data.success){
       dispatch(updatePartyNewJoin(res.data.payload))
+      getuserdata()
     }
     
 
@@ -62,8 +63,39 @@ try{
     const res=await axios.post(url+'/party/delete',{partyId:partyId},{withCredentials:true})
     if(res.data.success){
       dispatch(deleteparty(partyId))
+     // getuserdata()
     }
     
+
+  }
+  catch(err){
+    console.log(err)
+  }
+}
+
+//request handling for priat parties
+
+const sendPartyrequest=async(partyId)=>{
+  try{
+    const res=await axios.post(url+'/user/sendpartyreq',{partyId},{withCredentials:true})
+    if(res.data.success){
+      toast.success(res.data.message)
+       setuserdata(prev => {
+  if (!prev) return prev;
+
+  return {
+    ...prev,
+    PartyRequestsSent: [
+      ...(prev.PartyRequestsSent || []),
+      {
+        partyId: {
+          _id: partyId 
+        }
+      }
+    ]
+  };
+});
+    }
 
   }
   catch(err){
@@ -80,22 +112,28 @@ try{
 
 
 
-
-
   
   return (
    <div className="w-[70%]  h-full grid grid-cols-2 gap-3 p-3 overflow-y-auto">
-  {gameparties?.map((party, ind) => {
-    const isUserinParty=party?.members?.some(member=>member._id.toString()===userdata?._id.toString())
-    console.log(isUserinParty)
+  { gameparties?.map((party, ind) => {
+    const isUserinParty=party?.members?.some(member=>member._id?.toString()===userdata?._id?.toString())
+    const alreadyRequested = userdata?.PartyRequestsSent?.some(
+  req => req.partyId._id.toString() === party._id.toString()
+);
+    const isUserAdmin=party?.admin?.toString()===userdata?._id?.toString()
     return (
       <div
         key={ind}
         className="bg-gray-900 cursor-pointer border overflow-y-auto border-gray-700 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition flex flex-col justify-between h-22.5"
-      onClick={(e)=>{
-        e.stopPropagation()
-        navv(`/partychat/${party?._id}`)
-      }}
+      onClick={(e) => {
+  e.stopPropagation();
+
+  if (isUserinParty || isUserAdmin) {
+    navv(`/partychat/${party?._id}`);
+  } else {
+    toast.error("Join the party to access chat");
+  }
+}}
       >
 
         {/* Top row */}
@@ -154,7 +192,9 @@ try{
           </div>
 
           {/* Join button */}
-          {!isUserinParty ?
+
+          {party?.Open==="public"?
+          !isUserinParty  ?
           <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs cursor-pointer" onClick={(e)=>{
             e.stopPropagation()
             joinParty(party._id)}}>
@@ -165,7 +205,28 @@ try{
               leaveParty(party._id)}}>
             Leave
           </button>
+
+  :!isUserAdmin? 
+  !isUserinParty  ?
+  alreadyRequested?
+   <button className="bg-gray-500 text-white px-2 py-1 rounded text-xs cursor-not-allowed">
+      Requested
+    </button>:
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs cursor-pointer" onClick={(e)=>{
+            e.stopPropagation()
+            sendPartyrequest(party._id)}}>
+            Send Request
+          </button>:
+            <button className="bg-red-400 hover:bg-red-600 text-white px-2 py-1 rounded text-xs cursor-pointer" onClick={(e)=>{
+              e.stopPropagation()
+              leaveParty(party._id)}}>
+            Leave
+          </button>:
+  <button className='"bg-yellow-400 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs cursor-pointer'>Hop in chief</button>
   }
+
+
+  
         </div>
       </div>
     )

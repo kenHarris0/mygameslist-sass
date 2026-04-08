@@ -4,6 +4,8 @@ import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { gamecontext } from '../Context/Context'
 import axios from 'axios'
+import {updatePartyNewJoin} from '../Redux/Slices/PartySlice'
+import {useSelector,useDispatch} from 'react-redux'
 
 const Navbar = () => {
   const navv = useNavigate()
@@ -16,6 +18,7 @@ const Navbar = () => {
     allgames,
     allusers,getuserdata,socket,setallusers
   } = useContext(gamecontext)
+const dispatch=useDispatch()
 
   const [showdropdown, setshowdropdown] = useState(false)
   const [noticount, setnoticount] = useState(0)
@@ -54,7 +57,7 @@ const Navbar = () => {
 
   useEffect(() => {
     if (!userdata) return
-    setnoticount(userdata?.friendRequestsReceived?.length || 0)
+    setnoticount(userdata?.friendRequestsReceived?.length+userdata?.PartyRequestsReceived?.length || 0)
   }, [userdata])
 
   //accept friend request
@@ -74,6 +77,8 @@ const Navbar = () => {
   
   };
 });
+
+
         
       }
 
@@ -244,6 +249,152 @@ socket.on("friendreqaccepted-receiver", handler);
   },[socket])
 
 
+  //notification for party request handling 
+
+  const acceptPartyrequest=async(data)=>{
+    try{
+      const res=await axios.post(url+'/user/acceptpartyreq',{partyId:data.partyId._id,senderId:data.senderId._id},{withCredentials:true})
+      if(res.data.success){
+
+        setuserdata(prev=>
+          {
+        if(!prev) return prev;
+        const reqexists=prev.PartyRequestsReceived.some(req=>(req.partyId._id?.toString()===res.data.payload.partyId.toString() && req.senderId._id?.toString()===res.data.payload.userId.toString()))
+        if(!reqexists){
+          return prev;
+        }
+
+        return {
+          ...prev,
+          PartyRequestsReceived:prev.PartyRequestsReceived.filter(req=>!(req.partyId._id.toString()===res.data.payload.partyId.toString() && req.senderId._id.toString()
+          ===res.data.payload.userId.toString()))
+          
+        }
+      }
+        )
+
+dispatch(updatePartyNewJoin(res.data.payload.party))
+      }
+      
+
+    }
+    catch(err){
+      console.log(err)
+    }
+  }
+
+
+  const rejectPartyrequest=async(data)=>{
+    try{
+      const res=await axios.post(url+'/user/rejectpartyreq',{partyId:data.partyId._id,senderId:data.senderId._id},{withCredentials:true})
+      if(res.data.success){
+         setuserdata(prev=>
+          {
+        if(!prev) return prev;
+        const reqexists=prev.PartyRequestsReceived.some(req=>req.partyId._id.toString()===res.data.payload.partyId.toString() && req.senderId._id.toString()===res.data.payload.userId.toString())
+        if(!reqexists){
+          return prev;
+        }
+
+        return {
+          ...prev,
+          PartyRequestsReceived:prev.PartyRequestsReceived.filter(req=>!(req.partyId._id.toString()===res.data.payload.partyId.toString() && req.senderId._id.toString()
+          ===res.data.payload.userId.toString()))
+          
+        }
+      }
+        )
+
+      }
+
+    }
+    catch(err){
+      console.log(err)
+    }
+  }
+
+  useEffect(()=>{
+    if(!socket){
+      return;
+    }
+
+    const requesthandler=(data)=>{
+      toast.info(`${data.name} requested to join party ${data.partyname}`)
+      setuserdata(prev=>{
+        if(!prev) return prev;
+        const reqexists=prev.PartyRequestsReceived.some(req=>req.partyId?._id?.toString()===data.partyId.toString() && req.senderId._id?.toString()===data._id.toString())
+        if(reqexists){
+          return prev;
+        }
+
+        return {
+          ...prev,
+          PartyRequestsReceived:[
+            ...(prev.PartyRequestsReceived || []),
+            {
+              partyId:{
+                _id:data.partyId,
+                name:data.partyname
+              },
+              senderId:{
+                _id:data._id,
+                name:data.name,
+                image:data.image
+              }
+            }
+          ]
+          
+        }
+      })
+    }
+
+    const accepthandler=(data)=>{
+      toast.success(`${data.name} accepted your join request to ${data.partyname}`)
+      dispatch(updatePartyNewJoin(data.party))
+
+      setuserdata(prev=>{
+         if (!prev) return prev;
+         return {
+          ...prev,
+          PartyRequestsSent:prev?.PartyRequestsSent?.filter(req=>!(req.partyId?._id.toString()===data.partyId?.toString() && req.receiverId?._id?.toString()===data.adminId?.toString()))
+         }
+      })
+    }
+
+    const rejecthandler=(data)=>{
+      toast.error(`${data.name} rejected your join request to ${data.partyname}`)
+      setuserdata(prev=>{
+         if (!prev) return prev;
+         return {
+          ...prev,
+          PartyRequestsSent:prev?.PartyRequestsSent?.filter(req=>!(req.partyId?._id?.toString()===data.partyId?.toString() && req.receiverId?._id?.toString()===data.adminId?.toString()))
+         }
+      })
+    }
+
+
+
+    socket.on('party-req-received',requesthandler)
+    socket.on('party-req-accepted',accepthandler)
+    socket.on('party-req-rejected',rejecthandler)
+
+    return ()=>{
+      socket.off('party-req-received',requesthandler)
+socket.off('party-req-accepted',accepthandler)
+    socket.off('party-req-rejected',rejecthandler)
+    }
+
+
+
+
+  },[socket,setuserdata])
+
+
+ 
+
+
+
+
 
 
   return (
@@ -391,6 +542,33 @@ socket.on("friendreqaccepted-receiver", handler);
               ) : (
                 <p className='text-sm text-gray-400'>No notifications</p>
               )}
+
+              {
+                userdata.PartyRequestsReceived.map((req, ind) => (
+                  <div key={ind} className='flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 mb-2'>
+                    <img
+                      src={req.senderId?.image}
+                      alt={req.senderId?.name}
+                      className='w-10 h-10 rounded-full object-cover'
+                    />
+
+                    <div className='flex-1'>
+                      <h1 className='text-sm font-semibold'>{req.senderId?.name}</h1>
+                    </div>
+
+                    <div className='flex gap-2'>
+                      <button className='px-3 py-1 text-xs rounded-md bg-green-500/20 hover:bg-green-500/30 cursor-pointer' onClick={()=>acceptPartyrequest(req)}>
+                        Accept
+                      </button>
+                      <button className='px-3 py-1 text-xs rounded-md bg-red-500/20 hover:bg-red-500/30 cursor-pointer' onClick={()=>rejectPartyrequest(req)}>
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))
+              }
+
+
             </div>
           )}
         </div>
