@@ -494,6 +494,11 @@ socket.off('party-req-accepted',accepthandler)
         <p className='cursor-pointer hover:text-purple-400 transition'  onClick={() => navv('/usermessages')}>
           Messages
         </p>
+
+        <p className='cursor-pointer hover:text-purple-400 transition'  onClick={() => navv('/support')}>
+          Support
+        </p>
+
       </div>
 
       {/* Right section */}

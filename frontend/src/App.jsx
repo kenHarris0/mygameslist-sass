@@ -16,7 +16,7 @@ const Profile = lazy(() => import("./pages/Profile.jsx"));
 const Gamedesc = lazy(() => import("./pages/Gamedesc.jsx"));
 const Souls = lazy(() => import("./pages/Souls.jsx"));
 const Privatechat = lazy(() => import("./pages/Privatechat.jsx"));
-
+const Supportpage=lazy(()=>import('./pages/Supportpage.jsx'))
 const UserMessages = lazy(() => import("./pages/UserMessages.jsx"));
 
 
@@ -118,6 +118,7 @@ useEffect(() => {
          
 
          <Route path='/usermessages' element={<UserMessages/>}/>
+         <Route path='/support' element={<Supportpage/>}/>
 
 
       </Routes>
