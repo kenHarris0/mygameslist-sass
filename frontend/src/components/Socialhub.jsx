@@ -37,12 +37,13 @@ useEffect(() => {
   console.log("Socialhub updated", allusers);
 }, [allusers]);
   const navv=useNavigate()
-
+//""
   return (
     <div className='w-full h-full flex flex-col  p-4 gap-3 '>
       <h1 className='text-base text-gray-300 leading-relaxed font-medium'>Social Hub</h1>
-      <span className={`w-fit px-3 py-1 text-xs rounded-full text-white
-       ${onlineusers?.some(user=>user.toString()===userdata?._id.toString()) ? "bg-green-400/60 text-green-500/60 font-medium":"bg-purple-500/20 text-purple-300 font-medium"}`}>Online</span>
+      {onlineusers?.some(user=>user.toString()===userdata?._id.toString())? <span className={"w-fit px-3 py-1 text-xs rounded-full text-white bg-green-400/60  font-medium"}>Online</span>:
+      <span className={"w-fit px-3 py-1 text-xs rounded-full bg-purple-500/20 text-purple-300 font-medium"}>offline</span>}
+      
 
       <div className='w-[90%] h-20 flex items-center justify-center gap-3  p-1 bg-slate-900'>
 
@@ -104,7 +105,7 @@ useEffect(() => {
   <div
     className="w-full flex items-center justify-between 
     px-5 py-3 rounded-2xl cursor-pointer 
-    bg-gradient-to-r from-slate-900 to-slate-800
+    bg-linear-to-r from-slate-900 to-slate-800
     border border-white/5
     hover:border-purple-500/40 
     hover:shadow-lg hover:shadow-purple-500/10

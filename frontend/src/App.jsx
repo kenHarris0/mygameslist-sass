@@ -16,6 +16,10 @@ const Profile = lazy(() => import("./pages/Profile.jsx"));
 const Gamedesc = lazy(() => import("./pages/Gamedesc.jsx"));
 const Souls = lazy(() => import("./pages/Souls.jsx"));
 const Privatechat = lazy(() => import("./pages/Privatechat.jsx"));
+
+const UserMessages = lazy(() => import("./pages/UserMessages.jsx"));
+
+
 import { useDispatch } from 'react-redux';
 import {getallparties,deleteparty,updatePartyNewJoin,newpartycreated} from './Redux/Slices/PartySlice.js'
 import { toast } from 'react-toastify';
@@ -107,9 +111,15 @@ useEffect(() => {
          <Route path='/profile' element={<Profile/>} />
          <Route path='/game/:id' element={<Gamedesc/>} />
          <Route path='/souls' element={<Souls/>} />
-         <Route path='/privatechat/:id/:name' element={<Privatechat/>}/>
+         <Route path='/privatechat/:pid/:pname' element={<Privatechat/>}/>
          <Route path='/createparty/:gamename/:id' element={<Createpartyform/>}/>
-         <Route path='/partychat/:id' element={<Partychat/>}/>
+         <Route path='/partychat/:ppid' element={<Partychat/>}/>
+
+         
+
+         <Route path='/usermessages' element={<UserMessages/>}/>
+
+
       </Routes>
       
       </Suspense>

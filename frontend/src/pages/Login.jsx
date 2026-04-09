@@ -57,9 +57,13 @@ setloading(true)
         
       }, 1000);
     }
+    else{
+        toast.error(res.data)
+    }
 
   }
   catch(err){
+  
     console.log(err)
   }
 }
@@ -76,6 +80,9 @@ const register=async()=>{
 
         
       }, 1000);
+    }
+    else{
+        toast.error(res.data)
     }
 
   }

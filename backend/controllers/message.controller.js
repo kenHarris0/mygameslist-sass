@@ -73,3 +73,27 @@ export const getMessages=async(req,res)=>{
         console.log(err)
     }
 }
+
+
+export const getallmessagedusers=async(req,res)=>{
+    try{
+        const {userId}=req;
+
+        const messages=await Message.find({
+            $or:[
+                {senderId:userId},
+                {receiverId:userId}
+            ]
+        })
+
+        const users = new Set(messages.map(msg=>msg.senderId.toString()===userId.toString()?msg.receiverId.toString():msg.senderId.toString()))
+
+       
+
+        res.json({success:true,payload:Array.from(users)})
+
+    }
+    catch(err){
+        console.log(err)
+    }
+}

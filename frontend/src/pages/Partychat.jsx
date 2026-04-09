@@ -5,8 +5,10 @@ import {useParams} from 'react-router-dom'
 import { gamecontext } from '../Context/Context'
 import {getallpartymessages,updatepartymessage} from '../Redux/Slices/PartymsgSlice'
 import { Paperclip,SendHorizontal  } from 'lucide-react'
-const Partychat = () => {
-    const {id}=useParams()
+const Partychat = ({pid,isEmbedded }) => {
+    const {ppid}=useParams()
+
+    const id=ppid || pid
 const {url,socket,userdata}=useContext(gamecontext)
     const messages=useSelector(state=>state.partymessage.partymessages)
 const allparty=useSelector(state=>state.party.parties)
@@ -100,8 +102,11 @@ const min=(a,b)=>{
 
 
   return (
-    <div className='w-screen h-screen pt-10 flex items-center justify-center '>
-         <div className='w-[80%] h-[85%] border p-3'>
+    <div className={isEmbedded 
+  ? "w-full h-full flex flex-col"
+  : "w-screen h-screen flex items-center justify-center pt-15"
+}>
+         <div className='w-full h-full  p-3'>
     <div className='w-full h-full flex flex-col'>
 
         {/*header*/}

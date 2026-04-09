@@ -6,10 +6,18 @@ import axios from 'axios'
 import { Paperclip,SendHorizontal  } from 'lucide-react';
 
 
-const Chatpage = () => {
+const Chatpage = ({uid,uname}) => {
     const {url,socket,userdata,allusers,Privatemessages,setPrivatemessages,getPrivateMessages,onlineusers}=useContext(gamecontext)
 
-const {id,name}=useParams()
+
+
+const { pid, pname } = useParams();
+
+const id = uid || pid;
+const name = uname || pname;
+
+
+
 const [receiverinfo,setreceiverinfo]=useState({
     id:"",
     name:"",
