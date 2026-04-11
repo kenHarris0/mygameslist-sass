@@ -1,4 +1,4 @@
-import './config/env.js' 
+import './env.js' 
 
 import {v2 as cloudinary} from 'cloudinary';
 
