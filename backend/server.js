@@ -1,7 +1,9 @@
+import './config/env.js' 
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv'
-dotenv.config();
+
+
 import cookieParser  from 'cookie-parser';
 import  connectionDB from './config/db.js';
 //imports from other files
