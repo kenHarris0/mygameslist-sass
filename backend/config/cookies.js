@@ -1,6 +1,6 @@
 import cookieParser from 'cookie-parser'
 import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
+
 
 
 export const assignCookie=async(res,userId)=>{
