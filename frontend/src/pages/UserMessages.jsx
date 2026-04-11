@@ -33,7 +33,7 @@ const [currid,setcurrid]=useState(null)
 
 
 const Privatedms = allusers?.filter(user =>
-  uniqueDm?.includes(user?._id.toString())
+  uniqueDm?.map(id => id.toString()).includes(user?._id.toString())
 )
 
 //party selects

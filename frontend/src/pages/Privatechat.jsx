@@ -6,7 +6,7 @@ const Privatechat = () => {
     <div className='w-screen h-screen pt-10 flex items-center justify-center '>
 
         <div className='w-[80%] h-[85%] border p-3'>
-               <Chatpage/>
+               <Chatpage uid={null} uname={null}/>
         </div>
         
       
