@@ -9,13 +9,21 @@ import userRouter from './routes/user.routes.js'
 import gameRouter from './routes/game.route.js'
 import {app,server} from './config/socket.js'
 import messagerouter from './routes/message.routes.js'
-
+import rateLimit from "express-rate-limit";
 import partyrouter from './routes/party.routes.js'
 import Paertmessagerouter from './routes/partymessage.route.js'
 //     configs     //
+const limiter=rateLimit({
+  windowMs: 10*60*1000, 
+  max:100,
+  message:"Too many requests from this IP, please try again after 15 minutes"
+})
+
+app.use(limiter)
+
 
 app.use(cors({
-    origin:'http://localhost:5173',
+    origin: process.env.CLIENT_URL,
     credentials:true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
@@ -23,6 +31,8 @@ app.use(cors({
 
 app.use(express.json({limit:"20mb"}));
 app.use(cookieParser());
+
+
 
 // app routes
 
