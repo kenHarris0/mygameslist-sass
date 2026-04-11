@@ -89,17 +89,19 @@ catch(err){
 
 }
 
-export const logout=async(req,res)=>{
-    try{
-        res.cookie("jwt","",{
-            maxAge:0,
+export const logout = async (req, res) => {
+    try {
+        res.cookie("jwt", "", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 0  
         })
         res.status(200).json({ message: "Logged out successfully" });
-
     }
-    catch(err){
-    console.log(err)
-}
+    catch(err) {
+        console.log(err)
+    }
 }
 
 export const checkAuth=async(req,res)=>{
