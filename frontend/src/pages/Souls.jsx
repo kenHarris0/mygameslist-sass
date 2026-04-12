@@ -14,7 +14,7 @@ useEffect(() => {
 }, []);
 
 const [searchfilter,setsearchfilter]=useState("")
-
+const [filtertype,setfiltertype]=useState("user")
 
 
 
@@ -40,17 +40,32 @@ const [searchfilter,setsearchfilter]=useState("")
     />
 
     <div className='w-full flex gap-4 items-center justify-start'>
-      <span className='px-4 py-2 cursor-pointer text-xs rounded-full bg-purple-500/20 text-purple-300 font-medium border border-purple-400/20'>
+      <span className={`px-4 py-2 cursor-pointer text-xs rounded-full ${filtertype==="user"?"bg-purple-500/20 text-purple-300 font-medium border border-purple-400/20":"bg-white/5 text-white/70 font-medium border border-white/10"} `}
+      onClick={()=>setfiltertype("user")}>
         All players
       </span>
-      <span className='px-4 py-2 cursor-pointer text-xs rounded-full bg-white/5 text-white/70 font-medium border border-white/10'>
+      <span className={`px-4 py-2 cursor-pointer text-xs rounded-full ${filtertype==="game"?"bg-purple-500/20 text-purple-300 font-medium border border-purple-400/20":"bg-white/5 text-white/70 font-medium border border-white/10"}`}
+      onClick={()=>setfiltertype("game")}>
         Game
       </span>
     </div>
   </div>
 
   <div className='w-full overflow-y-auto grid grid-cols-4 gap-5 border border-white/20 rounded-2xl p-5 bg-white/5'>
-    {allusers?.filter(usr=>usr.name.toLowerCase().startsWith(searchfilter.toLowerCase())).map((user) => {
+    {allusers
+    ?.filter((usr) => {
+      if (filtertype === "user") {
+        return usr.name
+          ?.toLowerCase()
+          ?.includes(searchfilter.toLowerCase());
+      } else {
+        return usr.currentlyPlaying
+  ?.toLowerCase()
+  ?.includes(searchfilter.toLowerCase()) || false;
+       
+      }
+    })
+    .map((user) => {
 
     const currgame=user?.games?.find(game=>game.game.name===user.currentlyPlaying)
     const isawayingame=currgame?.status==="Away"

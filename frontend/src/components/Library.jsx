@@ -14,7 +14,7 @@ const {getuserdata}=useContext(gamecontext)
   const { userdata } = useContext(gamecontext)
 
   return (
-    <div className='w-full flex overflow-x-auto gap-5 p-4'>
+    <div className='w-full  grid grid-cols-4  gap-5 p-4'>
       {userdata?.games?.map((game, ind) => {
         return (
           <Gameshow game={game}/>

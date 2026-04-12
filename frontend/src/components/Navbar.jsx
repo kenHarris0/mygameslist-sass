@@ -465,6 +465,7 @@ socket.off('party-req-accepted',accepthandler)
                 <div
                   key={ind}
                   className='w-full min-h-13.75 px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center justify-between cursor-pointer transition'
+                  onClick={()=>navv(`/privatechat/${user?._id}/${user?.name}`)}
                 >
                   <div className='flex items-center gap-3'>
                     <img

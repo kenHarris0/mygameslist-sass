@@ -101,9 +101,9 @@ useEffect(()=>{
       <form onSubmit={handlesubmit} className='w-140 h-160 border bg-slate-800/30 border-amber-50/10 rounded-2xl shadow-amber-200 flex flex-col items-start justify-start p-6 gap-10' ref={formref}>
       <h1 className='text-4xl font-black'>Edit Profile</h1>
 
-          <input type="text" placeholder='Name' name='name' value={userinfo?.name} onChange={handlechange} className='w-full h-10 p-2'/>
-          <textarea type="text" placeholder='Bio' name='bio' rows={4} value={userinfo?.bio} onChange={handlechange} className='w-full h-30 p-2' />
-          <input type="text" placeholder='Status' name='status' value={userinfo?.status} onChange={handlechange}  className='w-full h-10 p-2'/>
+          <input type="text" placeholder='Name' name='name' value={userinfo?.name} onChange={handlechange} className='w-full h-10 p-2 border-4 border-gray-300 rounded-2xl' />
+          <textarea type="text" placeholder='Bio' name='bio' rows={4} value={userinfo?.bio} onChange={handlechange} className='w-full h-30 p-2 border-4 border-gray-300 rounded-2xl' />
+          <input type="text" placeholder='Status' name='status' value={userinfo?.status} onChange={handlechange}  className='w-full h-10 p-2 border-4 border-gray-300 rounded-2xl'/>
 
           <button type='submit'  className='w-fit px-3 h-10 py-1 text-xs rounded-full 
       bg-purple-500/20 text-purple-300 font-medium cursor-pointer' >Make changes</button>
@@ -158,13 +158,13 @@ rounded-2xl shadow-xl p-8   border-white/10  border-4 min-h-400'>
       {/* Bio */}
       <p className='text-sm text-gray-300 leading-relaxed font-medium'>
         {userdata?.bio || 
-        "Passionate about both technology and gaming, I enjoy building applications that solve real-world problems while also exploring immersive gaming experiences. I love collaborating with others, learning new tools, and constantly improving my skills."}
+        "-"}
       </p>
 
       {/* Status */}
       <span className='w-fit px-3 py-1 text-xs rounded-full 
       bg-purple-500/20 text-purple-300 font-medium'>
-        {userdata?.status || "Currently grinding 🔥"}
+        {userdata?.status || "Currently grinding "}
       </span>
 
       {/* edit option */}
@@ -179,7 +179,7 @@ rounded-2xl shadow-xl p-8   border-white/10  border-4 min-h-400'>
 
   {/* library */}
   <h1 className='text-6xl font-black leading-1 pb-20'>Library</h1>
-<div className='w-full flex overflow-x-auto gap-7 pb-4'>
+<div className='w-full  grid grid-cols-3  gap-2  pb-4'>
   
   {userdata?.games?.map((game,ind)=>{
     return (

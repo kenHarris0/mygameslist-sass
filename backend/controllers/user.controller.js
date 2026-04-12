@@ -39,8 +39,9 @@ export const register=async(req,res)=>{
     catch(err){
     console.log(err)
 }
+const newuserpopulated=await User.findById(newuser._id).select("-password").populate("friends").select("-password").populate("games.game")
     
-
+io.emit("new-user",newuserpopulated)
     res.json({success:true,message:"user registerd successfully"})
 }
 catch(err){
@@ -382,7 +383,13 @@ export const changeProfilePicture=async(req,res)=>{
     $set:{
         image:img
     }
+
+    
 })
+io.emit("profile-pic-changed",{
+        _id:userId,
+        image:img
+    })
 
 res.json({success:true,payload:img})
 
@@ -413,7 +420,16 @@ export const editProfile=async(req,res)=>{
         bio:bio,
         status:status
     }
+
 })
+
+
+    io.emit("profile-data-changed",{
+        _id:userId,
+        name:name,
+        bio:bio,
+        status:status
+    })
 
 res.json({success:true,message:"profile updated successfully"})
 

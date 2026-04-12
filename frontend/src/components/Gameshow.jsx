@@ -46,7 +46,7 @@ useEffect(()=>{
 
         {/* time played */}
         <p className='text-sm font-medium'>
-            <p className='text-semibold'>{game.totalTimePlayed/60} Hours</p>
+            <p className='text-semibold'>{Math.round(game.totalTimePlayed/60,2)} Hours</p>
           
           <progress className="progress progress-success w-56" value={game.totalTimePlayed} max="600000"></progress>
         </p>

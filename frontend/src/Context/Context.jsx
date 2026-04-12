@@ -12,6 +12,7 @@ const Context = ({children}) => {
 const[userdata,setuserdata]=useState(null)
 const [searchval,setsearchval]=useState("")
     const url="https://mygameslist-sass.onrender.com"
+    //
 const [socket,setsocket]=useState(null)
 
 //checking auth for session
@@ -211,11 +212,78 @@ const handler=(data)=>{
   })
 
 }
+const profilechange=(data)=>{
 
+    setallusers(prev=>{
+        if(!prev) return;
+          
+       
+      return prev.map(users=>{
+        if(users?._id.toString()===data._id.toString()){
+                 
+            return {
+                ...users,
+                image:data.image
+            }
+        }
+        
+            return users;
+        
+      })
+        
+    })
+}
+
+const profiledatachange=(data)=>{
+    setallusers(prev=>{
+        if(!prev) return;
+          
+       
+      return prev.map(users=>{
+        if(users?._id.toString()===data._id.toString()){
+                 
+            return {
+                ...users,
+                name:data.name,
+                 bio:data.bio,
+                  status:data.status
+            }
+        }
+        
+            return users;
+        
+      })
+        
+    })
+}
+
+const handlenewuser=(data)=>{
+    setallusers(prev=>{
+        if(!prev) return prev;
+
+        const alreadyexists=prev.some(user=>user?._id?.toString()===data?._id?.toString())
+        if(alreadyexists){
+            return prev;
+        }
+
+        return [
+            ...prev,
+            data
+        ]
+    })
+}
 
 
   socket.on('friendreqsent',handler)
-  return ()=>socket.off('friendreqsent', handler)
+  socket.on('profile-pic-changed',profilechange)
+  socket.on('profile-data-changed',profiledatachange)
+  socket.on('new-user',handlenewuser)
+  return ()=>{
+    socket.off('friendreqsent', handler)
+socket.off('profile-pic-changed',profilechange)
+  socket.off('profile-data-changed',profiledatachange)
+  socket.off('new-user',handlenewuser)
+  }
 
 },[socket])
 
@@ -225,6 +293,7 @@ useEffect(()=>{
 },[])
 
 useEffect(()=>{
+    
     getallgames()
     connectSocket()
     getallusers()
