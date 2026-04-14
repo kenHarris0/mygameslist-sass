@@ -11,7 +11,7 @@ const Context = ({children}) => {
     //getting user data
 const[userdata,setuserdata]=useState(null)
 const [searchval,setsearchval]=useState("")
-    const url="http://16.170.232.51:5000"
+    const url="https://api.kenharris.site"
     //
     //https://mygameslist-sass.onrender.com
 const [socket,setsocket]=useState(null)
